@@ -18,3 +18,4 @@ bot.addStatus({
   status: 'idle'
 });
 bot.onMessageCreate();
+bot.onInteractionCreate();

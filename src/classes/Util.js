@@ -35,6 +35,7 @@ class Util {
         const execute = execSync(d).toString();
         return execute;
     }
+
 }
 
 module.exports = Util;

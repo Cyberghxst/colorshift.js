@@ -1,5 +1,5 @@
 // Módulos
-const { ChannelType, Client, Collection, Partials } = require('discord.js');
+const { ChannelType, Client, Collection, Partials, Interaction, ButtonInteraction, SelectMenuInteraction, ContextMenuInteraction, CommandInteraction } = require('discord.js');
 const discord = require('discord.js');
 const { Intentos } = require('../utils/constants');
 const { error, success, warning } = require('../utils/functions');
@@ -27,6 +27,7 @@ class ColorshiftClient {
         this.database = new Database();
         this.devLogs = options.devLogs
         this.mobile = options.mobile
+        this.replit = options.replit
         // Validando el token
         if (typeof(this.token) !== 'string') return error(`Token inválido provisto en: ${this.token}`);
         // Validando el o los prefijos
@@ -54,7 +55,7 @@ class ColorshiftClient {
         // Datos del cliente
         this.data = {
             commands: new Collection(), // Colección (map) de comandos.
-            interaction: new Collection(), // Colección (map) de comandos.
+            interactions: new Collection(), // Colección (map) de comandos.
             slash: new Collection(), // Colección (map) de comandos.
             statuses: [] // Array vacío para pushear los estados.
         }
@@ -62,6 +63,18 @@ class ColorshiftClient {
         client.login(this.token); // Iniciar sesión en el cliente.
         // Evento 'ready'
         client.on('ready', async () => {
+            if(this.replit === true) {
+                const express = require('express');
+                const app = express();
+                const port = 5000;
+                app.listen(() => {});
+                app.get('/', (req, res) => {
+                    res.json({
+                        "texto": "Woaahh, ¡magia!",
+                        "texto": "Esto sirve para generar un servidor para que nunca se apague tu bot en replit."
+                    });
+                });
+            }
             status.enable(arrStatus);
             success(`¡Sesión iniciada en ${client.user.tag}!`); // Mensaje de sesión iniciada.
             success(`versión ${require('../../package.json').version}`); // Versión del paquete.
@@ -72,6 +85,10 @@ class ColorshiftClient {
             console.log(color('#FF1D6E', '#E30052', '#B60042')('Cyberghxst#2683'), '|', color('#FFFF40', '#CCCC00')('Mensaje:'), color.vice(`${res.data.data.message}`));
         });
     }
+    // Util
+    getCollection(type) {
+		return type === 'prefix' ? this.data.commands : type === 'slash' ? this.data.slash : this.data.interactions
+	}
     /*
         Métodos de la clase
     */
@@ -120,11 +137,18 @@ class ColorshiftClient {
                 console.log(`|-> ${comando.name} | Tipo: desconocido`, '| Estado:', color(rojo1, rojo2)('No cargado'));
                 continue;
             }
-            console.log(`|-> ${comando.name} | Tipo: ${comando.type}`, '| Estado:', color(verde1, verde2)('cargado'));
+            if(type === 'basic') {
+                console.log(`|-> ${comando.name} | Tipo: ${comando.type}`, '| Estado:', color(verde1, verde2)('cargado'));
+                this.data.commands.set(comando.name, comando);
+            } else if(type === 'interaction') {
+                console.log(`|-> ${comando.name} | Tipo: ${comando.type}`, '| Estado:', color(verde1, verde2)('cargado'));
+                this.data.interactions.set(comando.name, comando);
+            } else if(type === 'slash') {
+                console.log(`|-> ${comando.name} | Tipo: ${comando.type}`, '| Estado:', color(verde1, verde2)('cargado'));
+                this.data.slash.set(comando.name, comando);
+            }
             console.log(color.cristal('|-----------------------------------------------------------------|'));
-            this.data.commands.set(comando.name, comando);
         }
-        console.log(color.cristal('|-----------------------------------------------------------------|'));
         success('¡Comandos cargados!');
     }
 
@@ -134,6 +158,11 @@ class ColorshiftClient {
     // newCommand
     newCommand(...properties) {
         for (const option of properties) {
+            let type = option.type;
+            if(!type) {
+                console.log(`|-> ${comando.name} | Tipo: desconocido`, '| Estado:', color(rojo1, rojo2)('No cargado'));
+                continue;
+            }
             this.data.commands.set(option.name, option);
             console.log(`|-> ${option.name} | Tipo: ${option.type}`, color(verde1, verde2)('cargado.'));
             console.log(color.cristal('|-----------------------------------------------------------------|'));
@@ -163,9 +192,40 @@ class ColorshiftClient {
             if(!command) return
             const d = { args, client, db, message, prefix, util }
             if(command.args && command.args > args.length) return;
-            if (type !== 'basic') return;
             command.code(d)
         });
+    }
+    // InteractionCreate
+    onInteractionCreate() {
+        this.client.on('interactionCreate', interaction => {
+            const client = this.client;
+            const util = new Util(client);
+            const db = this.database;
+            const d = { client, db, interaction, util }
+            if (interaction.type === CommandInteraction) {
+                let interactions = this.getCollection('slash');
+                let int = interactions.find(i => i.data.name === interaction.commandName);
+                if(!int) return;
+                try {
+                    int.code(d)
+                } catch(e) {
+                    interaction.reply({
+                        content: '¡Ops, Something internal went wrong!', 
+                        ephemeral: true
+                    }).catch(e => null);
+                    error(e);
+                }
+            } else {
+                let ints = this.getCollection('interaction');
+                let int = ints.find(i => i._id === interaction.commandName)
+                if(!int) return;
+                try {
+                    int.code(d)
+                } catch(e) {
+                    error(e);
+                }
+            }
+        })
     }
 }
 

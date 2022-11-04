@@ -81,12 +81,11 @@ module.exports = {
 - viendo
 - escuchando
 - compitiendo
-- transmitiendo
 ### Tipos de estado
 Se utilizan los mismos que Discord.js (No renombrados).
 - online
 - idle
 - dnd
-- invisible
 ### Callbacks
 - onMessageCreate()
+- onInteractionCreate()
