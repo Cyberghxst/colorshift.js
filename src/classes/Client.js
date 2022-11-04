@@ -122,6 +122,9 @@ class ColorshiftClient {
 
     // messageCreate callback
     onMessageCreate() {
+        if(!this.intentos.includes('guildMessages') && !this.intentos.includes('messageContent')) {
+            return error('onMessageCreate -> Este callback requiere los intentos guildMessages y messageContent.')
+        }
         this.client.on('messageCreate', message => {
             const prefix = this.prefijo;
             const client = this.client;
