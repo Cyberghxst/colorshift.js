@@ -1,7 +1,7 @@
 # colorshift.js
 Un conjunto de métodos listos para usar, para que no te compliques la vida haciendo un bot de Discord.
-<br> Esto usa Discord.js 14 bajo el capó.
-<br> En Español.
+<br>Esto usa Discord.js 14 bajo el capó.
+<br>En Español.
 <br>> Se sugieren conocimientos básicos de JavaScript.
 
 ## Instalación
@@ -33,22 +33,25 @@ cliente.onMessageCreate(); // Ver callbacks en extras.
 // Comando en archivo principal (no command handler)
 cliente.newCommand({
     name: 'hola',
+    type: 'basic',
     code: async d => {
-        d.message.channel.send(`¡Hola ${d.message.author.username}`);
+        d.message.channel.send(`¡Hola ${d.message.author.username}!`);
     }
 })
 ```
 ## Formato de command handler
 Los comandos deben ir dentro de la carpeta que hayas declarado, para este ejemplo, usamos una carpeta llamada "comandos", los archivos dentro de ella deben tener una extensión ".js"
-<br> *Inválido*
-<br> `mi comando.txt`, `mi comando.json`
-<br> *Válido*
-<br> `mi comando.js`, `ban.js`
+<br>*Inválido*
+<br>`mi comando.txt`, `mi comando.json`
+<br>*Válido*
+<br>`mi comando.js`, `ban.js`
+
 ### Ejemplo de comando
 ```js
 module.exports = {
     name: 'hola',
     aliases: ['ola', 'elo'],
+    type: 'basic',
     code: async d => {
         d.message.channel.send(`Alo papayera, turepera conlapapaya`);
     }

@@ -36,8 +36,6 @@ class ColorshiftClient {
         this.client = client
         // Iniciando una instancia del StatusManager
         const status = new StatusManager(client);
-        // Iniciando una instancia de la clase util
-        const util = new Util(client);
         // Datos del cliente
         this.data = {
             commands: new Collection(), // Colección (map) de comandos.
@@ -51,7 +49,7 @@ class ColorshiftClient {
             success(`¡Sesión iniciada en ${client.user.tag}!`); // Mensaje de sesión iniciada.
             success(`versión ${require('../../package.json').version}`); // Versión del paquete.
             success(`basada en Discord.js ${discord.version}`)
-            console.log(color.blue('Moonlight Group'), '|', color.magenta('Cyberghxst'));
+            console.log(color.blue('Moonlight Group'), '|', color.magenta('Cyberghxst'), '|', color.blue('MX'));
         })
     }
     /*
@@ -137,8 +135,11 @@ class ColorshiftClient {
             const probably = args.shift()?.toLowerCase()
             const command = commands.find(cmd => cmd.name === probably || cmd.aliases && cmd.aliases.includes(probably))
             if(!command) return
+            const type = command.type;
             const d = { args, client, db, message, prefix, util }
-            if(command.args && command.args > args.length) return message.reply('Invalid usage')
+            if(command.args && command.args > args.length) return;
+            if (!type) return error(`Tipo de comando inválido en ${command.name}`);
+            if (type !== 'basic') return;
             command.code(d)
         });
     }
