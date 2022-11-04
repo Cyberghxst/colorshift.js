@@ -30,6 +30,29 @@ cliente.addStatus({
 });
 // Callback para habilitar el recibo de mensajes al cliente.
 cliente.onMessageCreate(); // Ver callbacks en extras.
+// Comando en archivo principal (no command handler)
+cliente.newCommand({
+    name: 'hola',
+    code: async d => {
+        d.message.channel.send(`¡Hola ${d.message.author.username}`);
+    }
+})
+```
+## Formato de command handler
+Los comandos deben ir dentro de la carpeta que hayas declarado, para este ejemplo, usamos una carpeta llamada "comandos", los archivos dentro de ella deben tener una extensión ".js"
+<br> *Inválido*
+<br> `mi comando.txt`, `mi comando.json`
+<br> *Válido*
+<br> `mi comando.js`, `ban.js`
+### Ejemplo de comando
+```js
+module.exports = {
+    name: 'hola',
+    aliases: ['ola', 'elo'],
+    code: async d => {
+        d.message.channel.send(`Alo papayera, turepera conlapapaya`);
+    }
+}
 ```
 > Este paquete puede contener bugs, porfavor, no usarlo para sus bots principales.
 ## Extras

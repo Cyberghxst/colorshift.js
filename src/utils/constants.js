@@ -31,5 +31,6 @@ const pkgName = 'Colorshift';
 
 module.exports = {
     Intentos,
-    tipoStatus
+    tipoStatus,
+    pkgName
 };

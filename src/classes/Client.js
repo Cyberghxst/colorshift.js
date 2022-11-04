@@ -1,34 +1,35 @@
 // Módulos
-const { Client, Collection, Partials } = require('discord.js');
-const { Intentos, tipoStatus } = require('../utils/constants');
+const { ChannelType, Client, Collection, Partials } = require('discord.js');
+const discord = require('discord.js');
+const { Intentos } = require('../utils/constants');
 const { error, success } = require('../utils/functions');
 const { lstatSync, readdirSync } = require('fs');
 const { join } = require('path');
-const colors = require('colors');
+const color = require('colors');
 // Importando el status manager
 const StatusManager = require('./StatusManager');
 
 class ColorshiftClient {
     constructor(options) {
         // Opciones del cliente
-        const {
-            token,
-            prefijo,
-            intentos
-        } = options;
+        this.prefijo = options.prefijo
+        this.token = options.token
+        this.intentos = options.intentos
+        // Contexto
         // Validando el token
-        if (typeof(token) !== 'string') return error(`Token inválido provisto en: ${token}`);
+        if (typeof(this.token) !== 'string') return error(`Token inválido provisto en: ${this.token}`);
         // Validando el o los prefijos
-        if (typeof(prefijo) !== 'string') return error(`Prefijo inválido provisto en: ${prefijo}`);
+        if (typeof(this.prefijo) !== 'string') return error(`Prefijo inválido provisto en: ${this.prefijo}`);
         // Validando el formato de intentos
-        if (!Array.isArray(intentos)) return error(`Formato de intentos inválido en: ${intentos}`);
+        if (!Array.isArray(this.intentos)) return error(`Formato de intentos inválido en: ${this.intentos}`);
         // Conversión de intentos en formato string a BitField
-        const newIntents = intentos.map(i => Intentos[i]);
+        const newIntents = this.intentos.map(i => Intentos[i]);
         // Iniciando un nuevo cliente
         const client = new Client({
             intents: newIntents,
             partials: Object.values(Partials)
         });
+        this.client = client
         // Iniciando una instancia del StatusManager
         const status = new StatusManager(client);
         // Datos del cliente
@@ -37,12 +38,13 @@ class ColorshiftClient {
             statuses: [] // Array vacío para pushear los estados.
         }
         const arrStatus = this.data.statuses;
-        client.login(token); // Iniciar sesión en el cliente.
+        client.login(this.token); // Iniciar sesión en el cliente.
         // Evento 'ready'
         client.on('ready', async () => {
             status.enable(arrStatus);
             success(`¡Sesión iniciada en ${client.user.tag}!`); // Mensaje de sesión iniciada.
-            success(`${require('../../package.json').version}`); // Versión del paquete.
+            success(`versión ${require('../../package.json').version}`); // Versión del paquete.
+            success(`basada en Discord.js ${discord.version}`)
         })
     }
     /*
@@ -92,6 +94,41 @@ class ColorshiftClient {
             console.log('|-----------------------------------------------------------------|');
             this.data.commands.set(comando.name, comando);
         }
+    }
+
+    /*
+        Main file command
+    */
+    // newCommand
+    newCommand(...properties) {
+        for (const option of properties) {
+            this.data.commands.set(option.name, option);
+            console.log(`|-> ${option.name}`, color.green('cargado.'));
+            console.log('|-----------------------------------------------------------------|');
+        }
+    }
+
+    /*
+        Callbacks
+    */
+
+    // messageCreate callback
+    // messageCreate callback
+    onMessageCreate() {
+        this.client.on('messageCreate', message => {
+            const prefix = this.prefijo;
+            const client = this.client;
+            if(message.author.bot || message.channel.type === ChannelType.Dm) return;
+            const commands = this.data.commands;
+            if(!message.content.toLowerCase().startsWith(prefix)) return;
+            const args = message.content.slice(prefix.length).trim().split(/ +/)
+            const probably = args.shift()?.toLowerCase()
+            const command = commands.find(cmd => cmd.name === probably || cmd.aliases && cmd.aliases.includes(probably))
+            if(!command) return
+            const d = { args, client, message, prefix }
+            if(command.args && command.args > args.length) return message.reply('Invalid usage')
+            command.code(d)
+        });
     }
 }
 
