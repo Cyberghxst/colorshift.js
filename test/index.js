@@ -15,10 +15,4 @@ bot.addStatus({
   type: 'viendo',
   status: 'idle'
 });
-bot.newCommand({
-    name: 'adios',
-    code: async d => {
-        d.message.channel.send(`Adiós ${d.message.author.username} :c`)
-    }
-});
 bot.onMessageCreate();

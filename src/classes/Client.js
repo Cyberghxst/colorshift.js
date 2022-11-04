@@ -8,6 +8,9 @@ const { join } = require('path');
 const color = require('colors');
 // Importando el status manager
 const StatusManager = require('./StatusManager');
+// Importando la clase util
+const Util = require('./Util');
+const { Database } = require('midb');
 
 class ColorshiftClient {
     constructor(options) {
@@ -15,7 +18,7 @@ class ColorshiftClient {
         this.prefijo = options.prefijo
         this.token = options.token
         this.intentos = options.intentos
-        // Contexto
+        this.database = new Database();
         // Validando el token
         if (typeof(this.token) !== 'string') return error(`Token inválido provisto en: ${this.token}`);
         // Validando el o los prefijos
@@ -29,9 +32,12 @@ class ColorshiftClient {
             intents: newIntents,
             partials: Object.values(Partials)
         });
+        // Contexto
         this.client = client
         // Iniciando una instancia del StatusManager
         const status = new StatusManager(client);
+        // Iniciando una instancia de la clase util
+        const util = new Util(client);
         // Datos del cliente
         this.data = {
             commands: new Collection(), // Colección (map) de comandos.
@@ -45,6 +51,7 @@ class ColorshiftClient {
             success(`¡Sesión iniciada en ${client.user.tag}!`); // Mensaje de sesión iniciada.
             success(`versión ${require('../../package.json').version}`); // Versión del paquete.
             success(`basada en Discord.js ${discord.version}`)
+            console.log(color.blue('Moonlight Group'), '|', color.magenta('Cyberghxst'));
         })
     }
     /*
@@ -94,6 +101,7 @@ class ColorshiftClient {
             console.log('|-----------------------------------------------------------------|');
             this.data.commands.set(comando.name, comando);
         }
+        success('¡Comandos cargados!');
     }
 
     /*
@@ -113,11 +121,12 @@ class ColorshiftClient {
     */
 
     // messageCreate callback
-    // messageCreate callback
     onMessageCreate() {
         this.client.on('messageCreate', message => {
             const prefix = this.prefijo;
             const client = this.client;
+            const db = this.database;
+            const util = new Util(client);
             if(message.author.bot || message.channel.type === ChannelType.Dm) return;
             const commands = this.data.commands;
             if(!message.content.toLowerCase().startsWith(prefix)) return;
@@ -125,7 +134,7 @@ class ColorshiftClient {
             const probably = args.shift()?.toLowerCase()
             const command = commands.find(cmd => cmd.name === probably || cmd.aliases && cmd.aliases.includes(probably))
             if(!command) return
-            const d = { args, client, message, prefix }
+            const d = { args, client, db, message, prefix, util }
             if(command.args && command.args > args.length) return message.reply('Invalid usage')
             command.code(d)
         });
