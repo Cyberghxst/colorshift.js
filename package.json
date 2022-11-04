@@ -13,5 +13,28 @@
   "dependencies": {
     "colors": "^1.4.0",
     "discord.js": "^14.6.0"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cyberghxst/colorshift.js.git"
+  },
+  "keywords": [
+    "aoi.js",
+    "bdfd",
+    "hytescriptjs",
+    "discordjs",
+    "dbd.js",
+    "dbd.ts",
+    "botmaker",
+    "wrapper",
+    "easybot"
+  ],
+  "bugs": {
+    "url": "https://github.com/Cyberghxst/colorshift.js/issues"
+  },
+  "homepage": "https://github.com/Cyberghxst/colorshift.js#readme"
 }
