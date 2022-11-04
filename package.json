@@ -1,0 +1,15 @@
+{
+  "name": "colorshift.js",
+  "version": "0.0.1",
+  "description": "Un paquete con métodos listos para usar para construir tu bot de Discord.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Cyberghxst",
+  "license": "ISC",
+  "dependencies": {
+    "colors": "^1.4.0",
+    "discord.js": "^14.6.0"
+  }
+}
