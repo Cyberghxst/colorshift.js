@@ -17,9 +17,9 @@ const cliente = new ColorshiftClient({
     intentos: ['INTENTOS', 'EN', 'ARRAY'] // Ver intentos disponibles en extras.
 });
 // Habilitando el command handler
-client.loadCommands('./comandos'); // Carga los archivos dentro de la carpeta comandos.
+cliente.loadCommands('./comandos'); // Carga los archivos dentro de la carpeta comandos.
 // Añadiendo estados
-client.addStatus({
+cliente.addStatus({
     text: 'Colorshift.js',
     type: 'viendo', // Ver tipos de actividad en extras.
     status: 'online' // Ver tipos de estado en extras.
@@ -62,3 +62,5 @@ Se utilizan los mismos que Discord.js (No renombrados).
 - idle
 - dnd
 - invisible
+### Callbacks
+- onMessageCreate()
