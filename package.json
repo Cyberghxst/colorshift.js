@@ -11,8 +11,9 @@
   "author": "Cyberghxst",
   "license": "ISC",
   "dependencies": {
-    "colors": "^1.4.0",
+    "axios": "^1.1.3",
     "discord.js": "^14.6.0",
+    "gradient-string": "^2.0.2",
     "midb": "^2.0.0"
   },
   "directories": {

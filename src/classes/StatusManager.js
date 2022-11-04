@@ -1,9 +1,10 @@
 const { tipoStatus } = require('../utils/constants');
-const { success } = require('../utils/functions');
+const { developmentLog, success } = require('../utils/functions');
 
 class StatusManager {
-    constructor(client) {
+    constructor(client, options) {
         this.client = client;
+        this.devLogs = options.devLogs
     }
     // Habilitar estados
     enable(arr) {
@@ -24,6 +25,7 @@ class StatusManager {
             const ty = types[index]
             const st = status[index]
             const link = urls[index]
+            if(this.devLogs == true) developmentLog(`[StatusManager :: HEARTBEAT] Index: ${index} Nombre: ${na}, Tipo: ${ty}, Estado: ${st}`);
             // Habilitando las presencias
             this.client.user.setPresence({
                 activities: [{
@@ -32,7 +34,7 @@ class StatusManager {
                     status: st
                 }]
             });
-        }, 10000)
+        }, 60000)
         success('¡Presencia habilitada!')
     }
 }

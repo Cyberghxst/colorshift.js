@@ -2,15 +2,21 @@
 const { ChannelType, Client, Collection, Partials } = require('discord.js');
 const discord = require('discord.js');
 const { Intentos } = require('../utils/constants');
-const { error, success } = require('../utils/functions');
+const { error, success, warning } = require('../utils/functions');
 const { lstatSync, readdirSync } = require('fs');
 const { join } = require('path');
-const color = require('colors');
+const color = require('gradient-string');
 // Importando el status manager
 const StatusManager = require('./StatusManager');
 // Importando la clase util
 const Util = require('./Util');
 const { Database } = require('midb');
+const axios = require('axios');
+const url = 'https://api.daimon-bot.ga/secret/message';
+const verde1 = '#00B347';
+const verde2 = '#0E813C';
+const rojo1 = '#FF4040';
+const rojo2 = '#CC0000';
 
 class ColorshiftClient {
     constructor(options) {
@@ -19,6 +25,8 @@ class ColorshiftClient {
         this.token = options.token
         this.intentos = options.intentos
         this.database = new Database();
+        this.devLogs = options.devLogs
+        this.mobile = options.mobile
         // Validando el token
         if (typeof(this.token) !== 'string') return error(`Token inválido provisto en: ${this.token}`);
         // Validando el o los prefijos
@@ -30,15 +38,24 @@ class ColorshiftClient {
         // Iniciando un nuevo cliente
         const client = new Client({
             intents: newIntents,
-            partials: Object.values(Partials)
+            partials: Object.values(Partials),
+            ws: {
+                properties: {
+                    browser: this.mobile === true ? 'Discord iOS' : 'Discord'
+                }
+            }
         });
         // Contexto
         this.client = client
         // Iniciando una instancia del StatusManager
-        const status = new StatusManager(client);
+        const status = new StatusManager(client, {
+            devLogs: options.devLogs
+        });
         // Datos del cliente
         this.data = {
             commands: new Collection(), // Colección (map) de comandos.
+            interaction: new Collection(), // Colección (map) de comandos.
+            slash: new Collection(), // Colección (map) de comandos.
             statuses: [] // Array vacío para pushear los estados.
         }
         const arrStatus = this.data.statuses;
@@ -49,8 +66,11 @@ class ColorshiftClient {
             success(`¡Sesión iniciada en ${client.user.tag}!`); // Mensaje de sesión iniciada.
             success(`versión ${require('../../package.json').version}`); // Versión del paquete.
             success(`basada en Discord.js ${discord.version}`)
-            console.log(color.blue('Moonlight Group'), '|', color.magenta('Cyberghxst'), '|', color.blue('MX'));
-        })
+            this.database.start()
+            success(`¡Base de datos conectada!`)
+            const res = await axios.get(url).catch(e => '¡Hola!');
+            console.log(color('#FF1D6E', '#E30052', '#B60042')('Cyberghxst#2683'), '|', color('#FFFF40', '#CCCC00')('Mensaje:'), color.vice(`${res.data.data.message}`));
+        });
     }
     /*
         Métodos de la clase
@@ -93,12 +113,18 @@ class ColorshiftClient {
             delete require.cache[join(mdir, dir, file)]
             let comando = require(join(mdir, dir, file));
             if (!comando) continue;
-            if (index === 0) console.log('|-----------------------------------------------------------------|');
+            if (index === 0) console.log(color.cristal('|-----------------------------------------------------------------|'));
             index++
-            console.log(`|-> ${comando.name}`, color.green('cargado.'));
-            console.log('|-----------------------------------------------------------------|');
+            let type = comando.type;
+            if(!type) {
+                console.log(`|-> ${comando.name} | Tipo: desconocido`, '| Estado:', color(rojo1, rojo2)('No cargado'));
+                continue;
+            }
+            console.log(`|-> ${comando.name} | Tipo: ${comando.type}`, '| Estado:', color(verde1, verde2)('cargado'));
+            console.log(color.cristal('|-----------------------------------------------------------------|'));
             this.data.commands.set(comando.name, comando);
         }
+        console.log(color.cristal('|-----------------------------------------------------------------|'));
         success('¡Comandos cargados!');
     }
 
@@ -109,8 +135,8 @@ class ColorshiftClient {
     newCommand(...properties) {
         for (const option of properties) {
             this.data.commands.set(option.name, option);
-            console.log(`|-> ${option.name}`, color.green('cargado.'));
-            console.log('|-----------------------------------------------------------------|');
+            console.log(`|-> ${option.name} | Tipo: ${option.type}`, color(verde1, verde2)('cargado.'));
+            console.log(color.cristal('|-----------------------------------------------------------------|'));
         }
     }
 
@@ -120,8 +146,8 @@ class ColorshiftClient {
 
     // messageCreate callback
     onMessageCreate() {
-        if(!this.intentos.includes('guildMessages') && !this.intentos.includes('messageContent')) {
-            return error('onMessageCreate -> Este callback requiere los intentos guildMessages y messageContent.')
+        if(!this.intentos.includes('guildMessages') || !this.intentos.includes('messageContent')) {
+            return warning('onMessageCreate -> Este callback requiere los intentos guildMessages y messageContent.')
         }
         this.client.on('messageCreate', message => {
             const prefix = this.prefijo;
@@ -135,10 +161,8 @@ class ColorshiftClient {
             const probably = args.shift()?.toLowerCase()
             const command = commands.find(cmd => cmd.name === probably || cmd.aliases && cmd.aliases.includes(probably))
             if(!command) return
-            const type = command.type;
             const d = { args, client, db, message, prefix, util }
             if(command.args && command.args > args.length) return;
-            if (!type) return error(`Tipo de comando inválido en ${command.name}`);
             if (type !== 'basic') return;
             command.code(d)
         });
