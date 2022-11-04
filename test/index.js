@@ -2,7 +2,7 @@ const { ColorshiftClient } = require('../src/index.js');
 
 const bot = new ColorshiftClient({
   token: 'OTM4Mjk3MTU0Nzk4MjI3NTE4.GUVXfv.kmFfVAZZP6g6vYPH630utoSH_yxh9tQSDAr7DE',
-  prefijo: '!',
+  prefijo: '?',
   intentos: ['guilds', 'guildPresences', 'guildMessages', 'messageContent']
 });
 bot.loadCommands('./test/comandos');
