@@ -1,5 +1,5 @@
 // Módulos
-const { ChannelType, Client, Collection, Partials, Interaction, ButtonInteraction, SelectMenuInteraction, ContextMenuInteraction, CommandInteraction } = require('discord.js');
+const { ChannelType, Client, Collection, Partials } = require('discord.js');
 const discord = require('discord.js');
 const { Intentos } = require('../utils/constants');
 const { error, success, warning } = require('../utils/functions');
@@ -83,6 +83,7 @@ class ColorshiftClient {
             success(`¡Base de datos conectada!`)
             const res = await axios.get(url).catch(e => '¡Hola!');
             console.log(color('#FF1D6E', '#E30052', '#B60042')('Cyberghxst#2683'), '|', color('#FFFF40', '#CCCC00')('Mensaje:'), color.vice(`${res.data.data.message}`));
+            // console.log(this.data);
         });
     }
     // Util
@@ -202,9 +203,9 @@ class ColorshiftClient {
             const util = new Util(client);
             const db = this.database;
             const d = { client, db, interaction, util }
-            if (interaction.type === CommandInteraction) {
+            if (interaction.isChatInputCommand()) {
                 let interactions = this.getCollection('slash');
-                let int = interactions.find(i => i.data.name === interaction.commandName);
+                let int = interactions.find(i => i.name === interaction.commandName);
                 if(!int) return;
                 try {
                     int.code(d)
